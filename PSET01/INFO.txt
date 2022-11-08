@@ -1,7 +1,5 @@
 Mas so preciso do seguinte....
 
-Matricula:
-Turma:
-Nome:
-
-Acesso (Email, senha) do GitHub:
+Matricula: 202203723
+Turma: SI1N
+Nome: Caio César Torres vargas
