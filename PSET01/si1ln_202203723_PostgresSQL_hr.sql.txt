@@ -1,0 +1,230 @@
+----criando usuario-----
+CREATE ROLE "caio" WITH 
+	SUPERUSER
+	CREATEDB
+	CREATEROLE
+	INHERIT
+	LOGIN
+	REPLICATION
+	BYPASSRLS
+	CONNECTION LIMIT -1;
+
+----criando a database-----
+CREATE DATABASE "uvv"
+  WITH OWNER = caio
+       ENCODING = 'UTF8'
+       TABLESPACE = pg_default
+       LC_COLLATE = 'Portuguese_Brazil.1252'
+       LC_CTYPE = 'Portuguese_Brazil.1252'
+       CONNECTION LIMIT = -1;
+
+      ----criando o Schema-----
+CREATE SCHEMA hr AUTHORIZATION caio;
+      
+SET SEARCH_PATH TO hr, "$user", public;
+
+SHOW SEARCH_PATH;
+
+ALTER USER caio
+SET SEARCH_PATH TO hr, "$user", public;
+
+
+-----Consultas--------
+SELECT CURRENT_SCHEMA();
+SHOW SEARCH_PATH;
+----------------------
+----Assim feito, é hora de inserir as tabelas e seus relacionamentos-----
+
+CREATE TABLE hr.regioes (
+                id_regiao INTEGER NOT NULL,
+                nome_regiao VARCHAR(25) NOT NULL,
+                CONSTRAINT regioes_pk PRIMARY KEY (id_regiao)
+);
+COMMENT ON TABLE hr.regioes IS 'Tabela de regioes';
+COMMENT ON COLUMN hr.regioes.id_regiao IS 'id da regiao';
+COMMENT ON COLUMN hr.regioes.nome_regiao IS 'nome da regiao';
+
+
+CREATE UNIQUE INDEX regioes_idx
+ ON hr.regioes
+ ( nome_regiao );
+
+CREATE TABLE hr.paises (
+                id_pais CHAR(2) NOT NULL,
+                nome_pais VARCHAR(50) NOT NULL,
+                id_regiao INTEGER,
+                CONSTRAINT paises_pk PRIMARY KEY (id_pais)
+);
+COMMENT ON TABLE hr.paises IS 'Tabela de paises de cada regiao';
+COMMENT ON COLUMN hr.paises.id_pais IS 'id do pais';
+COMMENT ON COLUMN hr.paises.nome_pais IS 'nome do pais';
+COMMENT ON COLUMN hr.paises.id_regiao IS 'id da regiao';
+
+
+CREATE UNIQUE INDEX paises_idx
+ ON hr.paises
+ ( nome_pais );
+
+CREATE TABLE hr.localizacoes (
+                lc_id_localizacoes INTEGER NOT NULL,
+                endereco VARCHAR(50),
+                uf VARCHAR(25),
+                cidade VARCHAR(50),
+                cep CHAR(14) NOT NULL,
+                id_pais CHAR(2),
+                CONSTRAINT lc_pk PRIMARY KEY (lc_id_localizacoes)
+);
+COMMENT ON TABLE hr.localizacoes IS 'tabela de localizao de paises';
+COMMENT ON COLUMN hr.localizacoes.lc_id_localizacoes IS 'localizacoes id';
+COMMENT ON COLUMN hr.localizacoes.endereco IS 'endereco';
+COMMENT ON COLUMN hr.localizacoes.uf IS 'uf';
+COMMENT ON COLUMN hr.localizacoes.cidade IS 'cidade';
+COMMENT ON COLUMN hr.localizacoes.cep IS 'Cpf';
+COMMENT ON COLUMN hr.localizacoes.id_pais IS 'id do pais';
+
+
+CREATE TABLE hr.departamentos (
+                id_departamento INTEGER NOT NULL,
+                nome VARCHAR(50),
+                lc_id_localizacoes INTEGER,
+                CONSTRAINT dt_pk PRIMARY KEY (id_departamento)
+);
+COMMENT ON TABLE hr.departamentos IS 'Tabela Departamento onde os empregados trabalham';
+COMMENT ON COLUMN hr.departamentos.id_departamento IS 'Id do departamento';
+COMMENT ON COLUMN hr.departamentos.nome IS 'nome do departamento';
+COMMENT ON COLUMN hr.departamentos.lc_id_localizacoes IS 'localizacoes id';
+
+
+CREATE UNIQUE INDEX departamentos_idx
+ ON hr.departamentos
+ ( nome );
+
+CREATE TABLE hr.cargos (
+                id_cargo VARCHAR(10) NOT NULL,
+                cargo VARCHAR(35) NOT NULL,
+                salario_minimo NUMERIC(8,2) NOT NULL,
+                salario_maximo NUMERIC(8,2) NOT NULL,
+                CONSTRAINT cargos_pk PRIMARY KEY (id_cargo)
+);
+COMMENT ON TABLE hr.cargos IS 'Tabela Cargos do funcionario';
+COMMENT ON COLUMN hr.cargos.id_cargo IS 'Id do cargo';
+COMMENT ON COLUMN hr.cargos.cargo IS 'Cargos do empresario';
+COMMENT ON COLUMN hr.cargos.salario_minimo IS 'Salario minimo';
+COMMENT ON COLUMN hr.cargos.salario_maximo IS 'Salario maximo';
+
+
+CREATE UNIQUE INDEX cargos_idx
+ ON hr.cargos
+ ( cargo );
+
+CREATE TABLE hr.Empregados  (
+                id_empregado INTEGER NOT NULL,
+                email VARCHAR(75) NOT NULL,
+                nome VARCHAR(75) NOT NULL,
+                telefone VARCHAR(20),
+                data_contratacao DATE NOT NULL,
+                salario NUMERIC(8,2) NOT NULL,
+                comissao NUMERIC(4,2) NOT NULL,
+                Parent_Id_supervisor INTEGER NOT NULL,
+                id_cargo VARCHAR(10) NOT NULL,
+                id_departamento INTEGER NOT NULL,
+                CONSTRAINT empregados__pk PRIMARY KEY (id_empregado)
+);
+COMMENT ON TABLE hr.Empregados  IS 'Tabela empregados, onde estara armazenado  todos os funcionarios';
+COMMENT ON COLUMN hr.Empregados .id_empregado IS 'Id do empregado';
+COMMENT ON COLUMN hr.Empregados .email IS 'Email do empregado';
+COMMENT ON COLUMN hr.Empregados .nome IS 'nome do empregado';
+COMMENT ON COLUMN hr.Empregados .telefone IS 'Telefone do empregado';
+COMMENT ON COLUMN hr.Empregados .salario IS 'Salario do empregado';
+COMMENT ON COLUMN hr.Empregados .comissao IS 'Comissao do empregado';
+COMMENT ON COLUMN hr.Empregados .Parent_Id_supervisor IS 'Id_supervisor';
+COMMENT ON COLUMN hr.Empregados .id_cargo IS 'Id do cargo';
+COMMENT ON COLUMN hr.Empregados .id_departamento IS 'Id do departamento';
+
+
+CREATE UNIQUE INDEX empregados__idx
+ ON hr.Empregados 
+ ( email );
+
+CREATE TABLE hr.historico_cargos (
+                dt_inicial DATE NOT NULL,
+                id_empregado INTEGER NOT NULL,
+                dt_final DATE NOT NULL,
+                id_cargo VARCHAR(10) NOT NULL,
+                id_departamento INTEGER NOT NULL,
+                CONSTRAINT hc_cargos_pk PRIMARY KEY (dt_inicial, id_empregado)
+);
+COMMENT ON TABLE hr.historico_cargos IS 'Tabela do historico do cargo do empregado';
+COMMENT ON COLUMN hr.historico_cargos.dt_inicial IS 'data_inicial';
+COMMENT ON COLUMN hr.historico_cargos.id_empregado IS 'Id do empregado';
+COMMENT ON COLUMN hr.historico_cargos.dt_final IS 'data final';
+COMMENT ON COLUMN hr.historico_cargos.id_cargo IS 'Id do cargo';
+COMMENT ON COLUMN hr.historico_cargos.id_departamento IS 'Id do departamento';
+
+
+ALTER TABLE hr.paises ADD CONSTRAINT regioes_paises_fk
+FOREIGN KEY (id_regiao)
+REFERENCES hr.regioes (id_regiao)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.localizacoes ADD CONSTRAINT paises_localizacoes_fk
+FOREIGN KEY (id_pais)
+REFERENCES hr.paises (id_pais)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.departamentos ADD CONSTRAINT localizacoes_departamentos_fk
+FOREIGN KEY (lc_id_localizacoes)
+REFERENCES hr.localizacoes (lc_id_localizacoes)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.historico_cargos ADD CONSTRAINT departamentos_historico_cargos_fk
+FOREIGN KEY (id_departamento)
+REFERENCES hr.departamentos (id_departamento)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.Empregados  ADD CONSTRAINT departamentos_empregados__fk
+FOREIGN KEY (id_departamento)
+REFERENCES hr.departamentos (id_departamento)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.Empregados  ADD CONSTRAINT cargos_empregados__fk
+FOREIGN KEY (id_cargo)
+REFERENCES hr.cargos (id_cargo)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.historico_cargos ADD CONSTRAINT cargos_historico_cargos_fk
+FOREIGN KEY (id_cargo)
+REFERENCES hr.cargos (id_cargo)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.Empregados  ADD CONSTRAINT empregados__empregados__fk
+FOREIGN KEY (Parent_Id_supervisor)
+REFERENCES hr.Empregados  (id_empregado)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+ALTER TABLE hr.historico_cargos ADD CONSTRAINT empregados__historico_cargos_fk
+FOREIGN KEY (id_empregado)
+REFERENCES hr.Empregados  (id_empregado)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION
+NOT DEFERRABLE;
+
+
+
+
