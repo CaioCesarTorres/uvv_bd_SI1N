@@ -1,0 +1,222 @@
+use hr;
+
+CREATE TABLE regioes (
+                id_regiao INT NOT NULL,
+                nome_regiao VARCHAR(25) NOT NULL,
+                PRIMARY KEY (id_regiao)
+);
+
+ALTER TABLE regioes COMMENT 'Tabela de regioes';
+
+ALTER TABLE regioes MODIFY COLUMN id_regiao INTEGER COMMENT 'id da regiao';
+
+ALTER TABLE regioes MODIFY COLUMN nome_regiao VARCHAR(25) COMMENT 'nome da regiao';
+
+
+CREATE UNIQUE INDEX regioes_idx
+ ON regioes
+ ( nome_regiao );
+
+CREATE TABLE paises (
+                id_pais CHAR(2) NOT NULL,
+                nome_pais VARCHAR(50) NOT NULL,
+                id_regiao INT,
+                PRIMARY KEY (id_pais)
+);
+
+ALTER TABLE paises COMMENT 'Tabela de paises de cada regiao';
+
+ALTER TABLE paises MODIFY COLUMN id_pais CHAR(2) COMMENT 'id do pais';
+
+ALTER TABLE paises MODIFY COLUMN nome_pais VARCHAR(50) COMMENT 'nome do pais';
+
+ALTER TABLE paises MODIFY COLUMN id_regiao INTEGER COMMENT 'id da regiao';
+
+
+CREATE UNIQUE INDEX paises_idx
+ ON paises
+ ( nome_pais );
+
+CREATE TABLE localizacoes (
+                lc_id_localizacoes INT NOT NULL,
+                endereco VARCHAR(50),
+                uf VARCHAR(25),
+                cidade VARCHAR(50),
+                cep CHAR(14) NOT NULL,
+                id_pais CHAR(2),
+                PRIMARY KEY (lc_id_localizacoes)
+);
+
+ALTER TABLE localizacoes COMMENT 'tabela de localizao de paises';
+
+ALTER TABLE localizacoes MODIFY COLUMN lc_id_localizacoes INTEGER COMMENT 'localizacoes id';
+
+ALTER TABLE localizacoes MODIFY COLUMN endereco VARCHAR(50) COMMENT 'endereco';
+
+ALTER TABLE localizacoes MODIFY COLUMN uf VARCHAR(25) COMMENT 'uf';
+
+ALTER TABLE localizacoes MODIFY COLUMN cidade VARCHAR(50) COMMENT 'cidade';
+
+ALTER TABLE localizacoes MODIFY COLUMN cep CHAR(14) COMMENT 'Cpf';
+
+ALTER TABLE localizacoes MODIFY COLUMN id_pais CHAR(2) COMMENT 'id do pais';
+
+
+CREATE TABLE departamentos (
+                id_departamento INT NOT NULL,
+                nome VARCHAR(50),
+                lc_id_localizacoes INT,
+                PRIMARY KEY (id_departamento)
+);
+
+ALTER TABLE departamentos COMMENT 'Tabela Departamento onde os empregados trabalham';
+
+ALTER TABLE departamentos MODIFY COLUMN id_departamento INTEGER COMMENT 'Id do departamento';
+
+ALTER TABLE departamentos MODIFY COLUMN nome VARCHAR(50) COMMENT 'nome do departamento';
+
+ALTER TABLE departamentos MODIFY COLUMN lc_id_localizacoes INTEGER COMMENT 'localizacoes id';
+
+
+CREATE UNIQUE INDEX departamentos_idx
+ ON departamentos
+ ( nome );
+
+CREATE TABLE cargos (
+                id_cargo VARCHAR(10) NOT NULL,
+                cargo VARCHAR(35) NOT NULL,
+                salario_minimo DECIMAL(8,2) NOT NULL,
+                salario_maximo DECIMAL(8,2) NOT NULL,
+                PRIMARY KEY (id_cargo)
+);
+
+ALTER TABLE cargos COMMENT 'Tabela Cargos do funcionario';
+
+ALTER TABLE cargos MODIFY COLUMN id_cargo VARCHAR(10) COMMENT 'Id do cargo';
+
+ALTER TABLE cargos MODIFY COLUMN cargo VARCHAR(35) COMMENT 'Cargos do empresario';
+
+ALTER TABLE cargos MODIFY COLUMN salario_minimo DECIMAL(8, 2) COMMENT 'Salario minimo';
+
+ALTER TABLE cargos MODIFY COLUMN salario_maximo DECIMAL(8, 2) COMMENT 'Salario maximo';
+
+
+CREATE UNIQUE INDEX cargos_idx
+ ON cargos
+ ( cargo );
+
+CREATE TABLE Empregados  (
+                id_empregado INT NOT NULL,
+                email VARCHAR(75) NOT NULL,
+                nome VARCHAR(75) NOT NULL,
+                sexo char(1) CHECK (sexo IN ( 'M', 'F') ),
+                telefone VARCHAR(20),
+                data_contratacao DATE NOT NULL,
+                salario DECIMAL(8,2) NOT NULL,
+                comissao DECIMAL(4,2) NOT NULL,
+                Parent_Id_supervisor INT NOT NULL,
+                id_cargo VARCHAR(10) NOT NULL,
+                id_departamento INT NOT NULL,
+                PRIMARY KEY (id_empregado)
+);
+
+ALTER TABLE Empregados  COMMENT 'Tabela empregados, onde estara armazenado  todos os funcionarios';
+
+ALTER TABLE Empregados  MODIFY COLUMN id_empregado INTEGER COMMENT 'Id do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN email VARCHAR(75) COMMENT 'Email do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN nome VARCHAR(75) COMMENT 'nome do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN telefone VARCHAR(20) COMMENT 'Telefone do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN salario DECIMAL(8, 2) COMMENT 'Salario do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN comissao DECIMAL(4, 2) COMMENT 'Comissao do empregado';
+
+ALTER TABLE Empregados  MODIFY COLUMN Parent_Id_supervisor INTEGER COMMENT 'Id_supervisor';
+
+ALTER TABLE Empregados  MODIFY COLUMN id_cargo VARCHAR(10) COMMENT 'Id do cargo';
+
+ALTER TABLE Empregados  MODIFY COLUMN id_departamento INTEGER COMMENT 'Id do departamento';
+
+
+CREATE UNIQUE INDEX empregados__idx
+ ON Empregados 
+ ( email );
+
+CREATE TABLE historico_cargos (
+                dt_inicial DATE NOT NULL,
+                id_empregado INT NOT NULL,
+                dt_final DATE NOT NULL,
+                id_cargo VARCHAR(10) NOT NULL,
+                id_departamento INT NOT NULL,
+                PRIMARY KEY (dt_inicial, id_empregado)
+);
+
+ALTER TABLE historico_cargos COMMENT 'Tabela do historico do cargo do empregado';
+
+ALTER TABLE historico_cargos MODIFY COLUMN dt_inicial DATE COMMENT 'data_inicial';
+
+ALTER TABLE historico_cargos MODIFY COLUMN id_empregado INTEGER COMMENT 'Id do empregado';
+
+ALTER TABLE historico_cargos MODIFY COLUMN dt_final DATE COMMENT 'data final';
+
+ALTER TABLE historico_cargos MODIFY COLUMN id_cargo VARCHAR(10) COMMENT 'Id do cargo';
+
+ALTER TABLE historico_cargos MODIFY COLUMN id_departamento INTEGER COMMENT 'Id do departamento';
+
+
+ALTER TABLE paises ADD CONSTRAINT regioes_paises_fk
+FOREIGN KEY (id_regiao)
+REFERENCES regioes (id_regiao)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE localizacoes ADD CONSTRAINT paises_localizacoes_fk
+FOREIGN KEY (id_pais)
+REFERENCES paises (id_pais)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE departamentos ADD CONSTRAINT localizacoes_departamentos_fk
+FOREIGN KEY (lc_id_localizacoes)
+REFERENCES localizacoes (lc_id_localizacoes)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE historico_cargos ADD CONSTRAINT departamentos_historico_cargos_fk
+FOREIGN KEY (id_departamento)
+REFERENCES departamentos (id_departamento)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE Empregados  ADD CONSTRAINT departamentos_empregados__fk
+FOREIGN KEY (id_departamento)
+REFERENCES departamentos (id_departamento)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE Empregados  ADD CONSTRAINT cargos_empregados__fk
+FOREIGN KEY (id_cargo)
+REFERENCES cargos (id_cargo)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE historico_cargos ADD CONSTRAINT cargos_historico_cargos_fk
+FOREIGN KEY (id_cargo)
+REFERENCES cargos (id_cargo)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE Empregados  ADD CONSTRAINT empregados__empregados__fk
+FOREIGN KEY (Parent_Id_supervisor)
+REFERENCES Empregados  (id_empregado)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
+
+ALTER TABLE historico_cargos ADD CONSTRAINT empregados__historico_cargos_fk
+FOREIGN KEY (id_empregado)
+REFERENCES Empregados  (id_empregado)
+ON DELETE NO ACTION
+ON UPDATE NO ACTION;
