@@ -1,10 +1,15 @@
 # uvv_bd_SI1N
 PROJETO PSET'S : UNIVERSIDADE DE VILA VELHA
-## POSTEGRESQL: 
+## COMPARAÇÕES:
+POSTEGRESQL: 
   - Otimo desempemnho de funcionalidade
   - Boa area de trabalho.
   - Boa documentação
-## MARIADB: 
+  
+MARIADB: 
   - SGBD Veloz
   - Facil uso.
   - Sintaxe acessivel
+  
+  
+
